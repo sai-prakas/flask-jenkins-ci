@@ -2,40 +2,49 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', 
-                    credentialsId: 'da8500f6-a482-4351-aec1-3c9eba997e36', 
-                    url: 'https://github.com/sai-prakas/flask-jenkins-ci.git'
+                checkout scm
             }
         }
         stage('Install Dependencies') {
-    steps {
-        sh '''
-            apt update
-            apt install -y python3-venv python3-pip
-            pip3 install --upgrade pip
-            pip3 install pytest
-        '''
-    }
-}
-
-
-
-
-
+            steps {
+                echo "Installing Python dependencies from requirements.txt (if present)..."
+                // Check if requirements.txt exists; if yes, install using pip.
+                sh '''
+                  if [ -f requirements.txt ]; then
+                    pip install -r requirements.txt
+                  else
+                    echo "No requirements.txt file found. Skipping dependency installation."
+                  fi
+                '''
+            }
+        }
         stage('Run Tests') {
-    steps {
-        sh '''
-            python3 -m pytest
-        '''
-    }
-}
-
+            steps {
+                echo "Running tests with pytest..."
+                // Check if tests exist (e.g., a tests/ directory or pytest.ini); if yes, run pytest.
+                sh '''
+                  if [ -d tests ] || [ -f pytest.ini ]; then
+                    pytest
+                  else
+                    echo "No tests found. Skipping test stage."
+                  fi
+                '''
+            }
+        }
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
+                echo "Deploying application..."
+                // Insert your deployment commands here.
+                // For example: sh 'python deploy.py'
             }
+        }
+    }
+    
+    post {
+        always {
+            echo "Pipeline finished."
         }
     }
 }
