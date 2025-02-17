@@ -12,7 +12,7 @@ pipeline {
         stage('Install Dependencies') {
     steps {
         sh '''
-        sudo apt update
+        echo "your-ec2-password" | sudo -S apt update
         sudo apt install -y python3-venv
         python3 -m venv venv
         source venv/bin/activate
@@ -21,6 +21,7 @@ pipeline {
         '''
     }
 }
+
 
 
         stage('Run Tests') {
