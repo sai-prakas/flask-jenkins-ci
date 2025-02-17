@@ -9,13 +9,18 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                echo "Installing Python dependencies from requirements.txt (if present)..."
-                // Check if requirements.txt exists; if yes, install using pip.
+                echo "Creating virtual environment..."
+                // Create a virtual environment in the workspace directory
+                sh 'python3 -m venv venv'
+                
+                echo "Upgrading pip and installing dependencies..."
+                // Upgrade pip and install dependencies from requirements.txt (if present)
                 sh '''
+                  venv/bin/pip install --upgrade pip
                   if [ -f requirements.txt ]; then
-                    pip install -r requirements.txt
+                    venv/bin/pip install -r requirements.txt
                   else
-                    echo "No requirements.txt file found. Skipping dependency installation."
+                    echo "No requirements.txt found. Skipping dependency installation."
                   fi
                 '''
             }
@@ -23,10 +28,10 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo "Running tests with pytest..."
-                // Check if tests exist (e.g., a tests/ directory or pytest.ini); if yes, run pytest.
+                // Run tests using the virtual environment's pytest
                 sh '''
                   if [ -d tests ] || [ -f pytest.ini ]; then
-                    pytest
+                    venv/bin/pytest
                   else
                     echo "No tests found. Skipping test stage."
                   fi
@@ -37,7 +42,7 @@ pipeline {
             steps {
                 echo "Deploying application..."
                 // Insert your deployment commands here.
-                // For example: sh 'python deploy.py'
+                // For example: sh 'venv/bin/python deploy.py'
             }
         }
     }
