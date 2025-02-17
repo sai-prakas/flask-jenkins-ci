@@ -11,20 +11,28 @@ pipeline {
         }
         stage('Install Dependencies') {
     steps {
-        sh '''
-            echo "yourpassword" | sudo -S apt update
-            sudo apt install -y python3-venv
-        '''
+        withCredentials([string(credentialsId: 'SUDO_PASSWORD', variable: 'SUDO_PASS')]) {
+            sh '''
+                echo $SUDO_PASS | sudo -S apt update
+                sudo apt install -y python3-venv python3-pip
+                pip3 install --upgrade pip
+                pip3 install pytest
+            '''
+        }
     }
 }
 
 
 
+
         stage('Run Tests') {
-            steps {
-                sh 'pytest'
-            }
-        }
+    steps {
+        sh '''
+            python3 -m pytest
+        '''
+    }
+}
+
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
